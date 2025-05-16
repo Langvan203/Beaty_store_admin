@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Trash2, Loader2, Shield, MoreVertical } from "lucide-react"
+import { Search, Trash2, Loader2, Shield, MoreVertical, UserCog, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -43,17 +43,25 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isLoading, setIsLoading] = useState(true)
-  
+
   // Delete dialog states
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  
+
   // Set admin dialog states
   const [isSetAdminDialogOpen, setIsSetAdminDialogOpen] = useState(false)
   const [isSettingAdmin, setIsSettingAdmin] = useState(false)
   const [selectedUserForAdmin, setSelectedUserForAdmin] = useState<User | null>(null)
-  
+
+  const [isSetStaffDialogOpen, setIsSetStaffDialogOpen] = useState(false)
+  const [isSettingStaff, setIsSettingStaff] = useState(false)
+  const [selectedUserForStaff, setSelectedUserForStaff] = useState<User | null>(null)
+
+  const [isSetCustomerDialogOpen, setIsSetCustomerDialogOpen] = useState(false)
+  const [isSettingCustomer, setIsSettingCustomer] = useState(false)
+  const [selectedUserForCustomer, setSelectedUserForCustomer] = useState<User | null>(null)
+
   const { token } = useAuth()
 
   // Fetch users on component mount
@@ -61,9 +69,17 @@ export default function UsersPage() {
     fetchUsers()
   }, [token])
 
+  const openSetStaffDialog = (user: User) => {
+    setSelectedUserForStaff(user)
+    setIsSetStaffDialogOpen(true)
+  }
+  const openSetCustomerDialog = (user: User) => {
+    setSelectedUserForCustomer(user)
+    setIsSetCustomerDialogOpen(true)
+  }
   const fetchUsers = async () => {
     if (!token) return
-    
+
     setIsLoading(true)
     try {
       const response = await fetch("http://localhost:5000/api/User/GetAllUserAdmin", {
@@ -71,13 +87,13 @@ export default function UsersPage() {
           Authorization: `Bearer ${token}`
         }
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch users')
       }
-      
+
       const result = await response.json()
-      
+
       if (result.status === 1 && Array.isArray(result.data)) {
         setUsers(result.data)
       } else {
@@ -110,7 +126,7 @@ export default function UsersPage() {
 
   const handleDelete = async () => {
     if (!selectedUserId) return
-    
+
     setIsDeleting(true)
     try {
       const response = await fetch(`http://localhost:5000/api/User/DeleteUser/?UserID=${selectedUserId}`, {
@@ -119,13 +135,13 @@ export default function UsersPage() {
           Authorization: `Bearer ${token}`
         }
       })
-      
+
       const result = await response.json()
-      
+
       if (response.ok && result.status === 1) {
         // Update local state to remove deleted user
         setUsers(users.filter(user => user.id !== selectedUserId))
-        
+
         toast.success('User deleted successfully', {
           position: "top-right",
           autoClose: 1000,
@@ -152,7 +168,7 @@ export default function UsersPage() {
 
   const handleSetAdminRole = async () => {
     if (!selectedUserForAdmin) return
-    
+
     setIsSettingAdmin(true)
     try {
       const response = await fetch(`http://localhost:5000/api/User/SetAdminRole?UserID=${selectedUserForAdmin.id}`, {
@@ -161,17 +177,17 @@ export default function UsersPage() {
           Authorization: `Bearer ${token}`
         }
       })
-      
+
       const result = await response.json()
-      
+
       if (response.ok && result.status === 1) {
         // Update local state to reflect the role change
-        setUsers(users.map(user => 
-          user.id === selectedUserForAdmin.id 
-            ? { ...user, role: "Admin" } 
+        setUsers(users.map(user =>
+          user.id === selectedUserForAdmin.id
+            ? { ...user, role: "Admin" }
             : user
         ))
-        
+
         toast.success('User has been granted admin privileges', {
           position: "top-right",
           autoClose: 500,
@@ -196,12 +212,106 @@ export default function UsersPage() {
     }
   }
 
+  const handleSetStaffRole = async () => {
+    if (!selectedUserForStaff) return
+
+    setIsSettingStaff(true)
+    try {
+      const response = await fetch(`http://localhost:5000/api/User/SetStaffRole?UserID=${selectedUserForStaff.id}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.status === 1) {
+        // Update local state to reflect the role change
+        setUsers(users.map(user =>
+          user.id === selectedUserForStaff.id
+            ? { ...user, role: "Staff" }
+            : user
+        ))
+
+        toast.success('User has been granted staff privileges', {
+          position: "top-right",
+          autoClose: 500,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce
+        })
+      } else {
+        toast.error(result.des || 'Failed to set staff role')
+      }
+    } catch (error) {
+      console.error("Error setting staff role:", error)
+      toast.error('Error setting staff role')
+    } finally {
+      setIsSettingStaff(false)
+      setIsSetStaffDialogOpen(false)
+      setSelectedUserForStaff(null)
+    }
+  }
+
+  const handleSetCustomerRole = async () => {
+    if (!selectedUserForCustomer) return
+
+    setIsSettingCustomer(true)
+    try {
+      const response = await fetch(`http://localhost:5000/api/User/SetCustomerRole?UserID=${selectedUserForCustomer.id}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.status === 1) {
+        // Update local state to reflect the role change
+        setUsers(users.map(user =>
+          user.id === selectedUserForCustomer.id
+            ? { ...user, role: "Customer" }
+            : user
+        ))
+
+        toast.success('User has been set to customer role', {
+          position: "top-right",
+          autoClose: 500,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce
+        })
+      } else {
+        toast.error(result.des || 'Failed to set customer role')
+      }
+    } catch (error) {
+      console.error("Error setting customer role:", error)
+      toast.error('Error setting customer role')
+    } finally {
+      setIsSettingCustomer(false)
+      setIsSetCustomerDialogOpen(false)
+      setSelectedUserForCustomer(null)
+    }
+  }
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case "Customer":
-        return <Badge variant="outline">Customer</Badge>
+        return <Badge variant="outline">Khách hàng</Badge>
       case "Admin":
         return <Badge variant="default">Admin</Badge>
+      case "Staff":
+        return <Badge variant="secondary">Nhân viên</Badge>
       default:
         return <Badge variant="outline">Unknown</Badge>
     }
@@ -210,9 +320,9 @@ export default function UsersPage() {
   const getGenderText = (gender: number) => {
     switch (gender) {
       case 1:
-        return "Male"
+        return "FeMale"
       case 2:
-        return "Female"
+        return "male"
       default:
         return "Other"
     }
@@ -221,12 +331,12 @@ export default function UsersPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Users</h1>
+        <h1 className="text-2xl font-bold">Quản lý người dùng</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>User Management</CardTitle>
+          <CardTitle>Quản lý người dùng</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -249,10 +359,10 @@ export default function UsersPage() {
                   <TableHead>ID</TableHead>
                   <TableHead>Username</TableHead>
                   <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead className="hidden md:table-cell">Phone</TableHead>
-                  <TableHead className="hidden lg:table-cell">Gender</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="hidden md:table-cell">SDT</TableHead>
+                  <TableHead className="hidden lg:table-cell">Giới tính</TableHead>
+                  <TableHead>Quyền hạn</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -267,7 +377,7 @@ export default function UsersPage() {
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
-                      No users found
+                      Không tìm thấy người dùng nào
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -290,22 +400,47 @@ export default function UsersPage() {
                           <DropdownMenuContent align="end">
                             {user.role !== "Admin" && (
                               <>
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => openSetAdminDialog(user)}
                                   className="text-blue-600"
                                 >
                                   <Shield className="mr-2 h-4 w-4" />
-                                  Set as Admin
+                                  Thêm quyền Admin
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                               </>
                             )}
-                            <DropdownMenuItem 
+                            {user.role !== "Staff" && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => openSetStaffDialog(user)}
+                                  className="text-green-600"
+                                >
+                                  <UserCog className="mr-2 h-4 w-4" />
+                                  Thêm quyền Nhân viên
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+                            {user.role !== "Customer" && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => openSetCustomerDialog(user)}
+                                  className="text-orange-600"
+                                >
+                                  <User className="mr-2 h-4 w-4" />
+                                  Đặt làm Khách hàng
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+
+                            <DropdownMenuItem
                               onClick={() => openDeleteDialog(user.id)}
                               className="text-red-600"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Delete User
+                              Xóa người dùng
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -318,19 +453,18 @@ export default function UsersPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Bạn có chắc chắn?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user account and remove
-              their data from our servers.
+              Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault()
@@ -342,7 +476,7 @@ export default function UsersPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  Đang xóa...
                 </>
               ) : (
                 'Delete'
@@ -356,14 +490,14 @@ export default function UsersPage() {
       <AlertDialog open={isSetAdminDialogOpen} onOpenChange={setIsSetAdminDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Grant Admin Rights</AlertDialogTitle>
+            <AlertDialogTitle>Đặt làm admin</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to make {selectedUserForAdmin?.username} an admin? 
-              Admins have full access to the dashboard and all management features.
+              Bạn có muốn {selectedUserForAdmin?.username} trở thành admin?
+              Admin có quyền quản lý tất cả người dùng và sản phẩm.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSettingAdmin}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isSettingAdmin}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault()
@@ -375,10 +509,73 @@ export default function UsersPage() {
               {isSettingAdmin ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
+                  Đang xử lý...
                 </>
               ) : (
                 'Grant Admin Rights'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Set Customer Role Confirmation Dialog */}
+      <AlertDialog open={isSetCustomerDialogOpen} onOpenChange={setIsSetCustomerDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Đặt làm khách hàng</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có muốn đổi quyền của {selectedUserForCustomer?.username} thành khách hàng?
+              Khách hàng chỉ có quyền mua hàng và không thể truy cập trang quản trị.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSettingCustomer}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleSetCustomerRole()
+              }}
+              disabled={isSettingCustomer}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {isSettingCustomer ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang xử lý...
+                </>
+              ) : (
+                'Set as Customer'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={isSetStaffDialogOpen} onOpenChange={setIsSetStaffDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Đặt làm nhân viên</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có muốn {selectedUserForStaff?.username} trở thành nhân viên?
+              Nhân viên có quyền quản lý đơn hàng và sản phẩm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSettingStaff}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleSetStaffRole()
+              }}
+              disabled={isSettingStaff}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isSettingStaff ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang xử lý...
+                </>
+              ) : (
+                'Grant Staff Rights'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

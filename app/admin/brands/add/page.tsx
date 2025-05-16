@@ -106,22 +106,22 @@ export default function AddBrandPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Add New Brand</h1>
+        <h1 className="text-2xl font-bold">Thêm nhãn hàng</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
-            <CardTitle>Brand Information</CardTitle>
+            <CardTitle>Thông tin nhãn hàng</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Brand Name *</Label>
+              <Label htmlFor="name">Tên nhãn hàng *</Label>
               <Input id="name" name="name" value={brand.name} onChange={handleInputChange} required />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Mô tả</Label>
               <Textarea
                 id="description"
                 name="description"
@@ -132,11 +132,11 @@ export default function AddBrandPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="thumbnail">Brand Thumbnail</Label>
+              <Label htmlFor="thumbnail">Ảnh đại diện</Label>
               <div className="flex items-center gap-4">
                 <Button type="button" variant="outline" onClick={() => document.getElementById("thumbnail")?.click()}>
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload Image
+                  Tải ảnh
                 </Button>
                 <Input
                   id="thumbnail"
@@ -166,11 +166,11 @@ export default function AddBrandPage() {
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => router.push("/admin/brands")}>
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Brand
+             Lưu thay đổi
             </Button>
           </CardFooter>
         </Card>

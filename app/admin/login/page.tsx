@@ -43,7 +43,6 @@ export default function AdminLoginPage() {
     setError(null)
 
     try {
-      // In a real application, you would call your authentication API
       const response = await fetch('http://localhost:5000/api/User/UserLogin', {
         method: 'POST',
         headers: {
@@ -53,48 +52,56 @@ export default function AdminLoginPage() {
           email: formData.email,
           password: formData.password,
         }),
-      }).then((res) => res.json()).then((data) => {
-        if (data.data.user.role === 1) {
-          localStorage.setItem('adminToken', data.data.token)
-          localStorage.setItem('adminUser', JSON.stringify(data.data.user))
-          login(data.data.token, data.data.user)
-          document.cookie = "adminAuthenticated=true; path=/; max-age=86400"
-          toast.success('Đăng nhập thành công', {
-            position: "top-right",
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-            onClose: () => router.push("/admin")
-          });
-        }
-        else {
-          toast.warning('Không phải admin', {
-            position: "top-right",
-            autoClose: 1000,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-          });
-        }
       });
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
 
-      // For demo purposes, check if email and password match predefined values
+      const data = await response.json();
+
+      if (!data.data || !data.data.token || !data.data.user) {
+        throw new Error(data.des || "Invalid response from server");
+      }
+
+      if (data.data.user.role === 1 || data.data.user.role === 2) {
+        // Gọi login từ AuthContext
+        login(data.data.token, data.data.user);
+
+        // Set cookie
+        document.cookie = "adminAuthenticated=true; path=/; max-age=86400";
+
+        // Thông báo thành công và chuyển hướng
+        const message = data.data.user.role === 1
+          ? 'Đăng nhập thành công'
+          : 'Đăng nhập thành công tài khoản nhân viên';
+
+        const redirectPath = data.data.user.role === 1 ? "/admin" : "/admin/products";
+
+        toast.success(message, {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+          onClose: () => router.push(redirectPath)
+        });
+      } else {
+        toast.warning('Không phải admin hoặc nhân viên', {
+          position: "top-right",
+          autoClose: 1000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+        });
+      }
     } catch (error) {
-      console.error("Login error:", error)
-      setError(error instanceof Error ? error.message : "An unexpected error occurred")
-    } finally {
-      setIsLoading(false)
+      console.error("Login error:", error);
+      setError(error instanceof Error ? error.message : "Đã xảy ra lỗi không xác định");
     }
   }
 
@@ -107,8 +114,8 @@ export default function AdminLoginPage() {
               <Package className="h-10 w-10 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the admin dashboard</CardDescription>
+          <CardTitle className="text-2xl">Đăng nhập quản trị</CardTitle>
+          <CardDescription>Nhập thông tin đăng nhập để truy cập menu quản trị</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
@@ -131,7 +138,7 @@ export default function AdminLoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Mật khẩu</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -163,7 +170,7 @@ export default function AdminLoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Logging in...
+                  Đang đăng nhập...
                 </>
               ) : (
                 "Login"

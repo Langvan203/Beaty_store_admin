@@ -108,22 +108,22 @@ export default function AddCategoryPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Add New Category</h1>
+        <h1 className="text-2xl font-bold">Thêm danh mục sản phẩm</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
-            <CardTitle>Category Information</CardTitle>
+            <CardTitle>Thông tin danh mục</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Category Name *</Label>
+              <Label htmlFor="name">Tên danh mục *</Label>
               <Input id="name" name="name" value={category.name} onChange={handleInputChange} required />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Mô tả</Label>
               <Textarea
                 id="description"
                 name="description"
@@ -134,11 +134,11 @@ export default function AddCategoryPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="thumbnail">Category Thumbnail</Label>
+              <Label htmlFor="thumbnail">Ảnh</Label>
               <div className="flex items-center gap-4">
                 <Button type="button" variant="outline" onClick={() => document.getElementById("thumbnail")?.click()}>
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload Image
+                  Tải lên ảnh
                 </Button>
                 <Input
                   id="thumbnail"
@@ -168,11 +168,11 @@ export default function AddCategoryPage() {
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => router.push("/admin/categories")}>
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Category
+              Lưu thay đổi
             </Button>
           </CardFooter>
         </Card>

@@ -54,7 +54,7 @@ export default function OrderDetailPage() {
   const router = useRouter()
   const { token } = useAuth()
   const params = useParams()
-    const { id } = params
+  const { id } = params
   const [isLoading, setIsLoading] = useState(true)
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [status, setStatus] = useState("")
@@ -90,13 +90,13 @@ export default function OrderDetailPage() {
             Authorization: `Bearer ${token}`
           }
         })
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch order')
         }
-        
+
         const result = await response.json()
-        
+
         if (result.status === 1 && result.data) {
           setOrder(result.data)
           setStatus(result.data.statusCode.toString())
@@ -160,13 +160,13 @@ export default function OrderDetailPage() {
 
   const handleUpdateStatus = async () => {
     if (!order || !status || status === order.statusCode.toString()) return
-  
+
     setIsSubmitting(true)
-  
+
     try {
       // Sửa endpoint để sử dụng query parameters thay vì JSON body
       const response = await fetch(
-        `http://localhost:5000/api/Order/Update-order-status-admin?orderId=${order.id}&status=${status}`, 
+        `http://localhost:5000/api/Order/Update-order-status-admin?orderId=${order.id}&status=${status}`,
         {
           method: 'PUT',
           headers: {
@@ -176,39 +176,39 @@ export default function OrderDetailPage() {
           // Không cần body khi dùng query parameters
         }
       );
-  
+
       if (!response.ok) throw new Error('Failed to update order status');
-      
+
       const result = await response.json();
-      
+
       if (result.status === 1) {
         toast.success('Cập nhật trạng thái thành công', {
-            position: "top-right",
-            autoClose: 300,
-            hideProgressBar: false,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            transition: Bounce,
-            onClose: () => router.push("/admin/orders")
+          position: "top-right",
+          autoClose: 300,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+          transition: Bounce,
+          onClose: () => router.push("/admin/orders")
         });
-        
+
         // Refresh the order data
         const refreshResponse = await fetch(`http://localhost:5000/api/Order/Get-Order-history?orderId=${params.id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
-        
+
         if (refreshResponse.ok) {
           const refreshData = await refreshResponse.json();
           if (refreshData.status === 1 && refreshData.data) {
             setOrder(refreshData.data);
           }
         }
-        
+
         // Reset history note
         setHistoryNote("");
       } else {
@@ -268,8 +268,8 @@ export default function OrderDetailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {order.items.map((item) => (
-                  <TableRow key={item.id}>
+                {order.items.map((item, index) => (
+                  <TableRow key={`item-${item.id}-${index}`}>
                     <TableCell>
                       <div className="h-12 w-12 rounded-md overflow-hidden">
                         <Image

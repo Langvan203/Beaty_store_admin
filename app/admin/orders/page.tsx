@@ -161,7 +161,7 @@ export default function OrdersPage() {
                   <SelectValue placeholder="Lọc theo trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
                   <SelectItem value="1">Processing</SelectItem>
                   <SelectItem value="2">Order success</SelectItem>
                   <SelectItem value="3">Deliviring</SelectItem>
@@ -178,12 +178,12 @@ export default function OrdersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead className="hidden md:table-cell">Phone</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>Thời gian đặt</TableHead>
+                  <TableHead>Khách hàng</TableHead>
+                  <TableHead className="hidden md:table-cell">Số điện thoại</TableHead>
+                  <TableHead>Tổng tiền</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { BarChart3, Package, ShoppingBag, Tag, Users, Layers, FileBox, Menu, LogOut, User } from "lucide-react"
+import { BarChart3, Package, ShoppingBag, Tag, Users, Layers, FileBox, Menu, LogOut, User, Palette } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -32,7 +32,7 @@ export default function AdminLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const {user} = useAuth();
+  const { user } = useAuth();
 
 
   // Check if the current path is the login page
@@ -48,7 +48,21 @@ export default function AdminLayout({
     // Redirect to login page
     router.push("/admin/login")
   }
+  useEffect(() => {
+    // Nếu người dùng có role = 2 (Staff) và đang truy cập trang cấm
+    if (user && user.role === 2) {
+      const restrictedPaths = ['/admin', '/admin/users', '/admin/brands', '/admin/categories'];
+      const isRestrictedPath = restrictedPaths.some(path =>
+        pathname === path || pathname.startsWith(`${path}/`)
+      );
 
+
+    }
+  }, [pathname, user, router]);
+  const canAccessDashboard = !user || user.role !== 2;
+  const canAccessUsers = !user || user.role !== 2;
+  const canAccessBrands = !user || user.role !== 2;
+  const canAccessCategories = !user || user.role !== 2;
   // If it's the login page, just render the children without the admin layout
   if (isLoginPage) {
     return <>{children}</>
@@ -60,6 +74,7 @@ export default function AdminLayout({
       <div className="hidden border-r bg-muted/40 md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+
             <Link href="/admin" className="flex items-center gap-2 font-semibold">
               <Package className="h-6 w-6" />
               <span>Admin Dashboard</span>
@@ -67,68 +82,77 @@ export default function AdminLayout({
           </div>
           <div className="flex-1 overflow-auto py-2">
             <nav className="grid items-start px-2 text-sm font-medium">
-              <Link
-                href="/admin"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname === "/admin" ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
-              >
-                <BarChart3 className="h-4 w-4" />
-                Dashboard
-              </Link>
+              {canAccessDashboard && (
+                <Link
+                  href="/admin"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname === "/admin" ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Dashboard
+                </Link>
+              )}
               <Link
                 href="/admin/products"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname.startsWith("/admin/products") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/products") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                  }`}
               >
                 <ShoppingBag className="h-4 w-4" />
-                Products
+                Sản phẩm
               </Link>
-              <Link
-                href="/admin/brands"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname.startsWith("/admin/brands") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
-              >
-                <Tag className="h-4 w-4" />
-                Brands
-              </Link>
-              <Link
-                href="/admin/categories"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname.startsWith("/admin/categories") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
-              >
-                <Layers className="h-4 w-4" />
-                Categories
-              </Link>
+              {canAccessBrands && (
+                <Link
+                  href="/admin/brands"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/brands") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
+                >
+                  <Tag className="h-4 w-4" />
+                  Nhãn hàng
+                </Link>
+              )}
+              {canAccessCategories && (
+                <Link
+                  href="/admin/categories"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/categories") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
+                >
+                  <Layers className="h-4 w-4" />
+                  Danh mục
+                </Link>
+              )}
               <Link
                 href="/admin/variants"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname.startsWith("/admin/variants") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/variants") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                  }`}
               >
                 <FileBox className="h-4 w-4" />
-                Product Variants
+                Kích thước
               </Link>
               <Link
-                href="/admin/users"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname.startsWith("/admin/users") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
+                href="/admin/colors"
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/colors") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                  }`}
               >
-                <Users className="h-4 w-4" />
-                Users
+                <Palette className="h-4 w-4" />
+                Màu sắc
               </Link>
+              {canAccessUsers && (
+                <Link
+                  href="/admin/users"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/users") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
+                >
+                  <Users className="h-4 w-4" />
+                  Người dùng
+                </Link>
+              )}
               <Link
                 href="/admin/orders"
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  pathname.startsWith("/admin/orders") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                }`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/orders") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                  }`}
               >
                 <Package className="h-4 w-4" />
-                Orders
+                Đơn hàng
               </Link>
             </nav>
           </div>
@@ -145,68 +169,77 @@ export default function AdminLayout({
             </SheetTrigger>
             <SheetContent side="left" className="w-[240px] sm:w-[280px]">
               <nav className="grid gap-2 text-lg font-medium">
-                <Link
-                  href="/admin"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname === "/admin" ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  Dashboard
-                </Link>
+                {canAccessDashboard && (
+                  <Link
+                    href="/admin"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname === "/admin" ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                      }`}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    Dashboard
+                  </Link>
+                )}
                 <Link
                   href="/admin/products"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname.startsWith("/admin/products") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/products") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
                 >
                   <ShoppingBag className="h-4 w-4" />
-                  Products
+                  Sản phẩm
                 </Link>
-                <Link
-                  href="/admin/brands"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname.startsWith("/admin/brands") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
-                >
-                  <Tag className="h-4 w-4" />
-                  Brands
-                </Link>
-                <Link
-                  href="/admin/categories"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname.startsWith("/admin/categories") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
-                >
-                  <Layers className="h-4 w-4" />
-                  Categories
-                </Link>
+                {canAccessBrands && (
+                  <Link
+                    href="/admin/brands"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/brands") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                      }`}
+                  >
+                    <Tag className="h-4 w-4" />
+                    Nhãn hàng
+                  </Link>
+                )}
+                {canAccessCategories && (
+                  <Link
+                    href="/admin/categories"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/categories") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                      }`}
+                  >
+                    <Layers className="h-4 w-4" />
+                    Danh mục
+                  </Link>
+                )}
                 <Link
                   href="/admin/variants"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname.startsWith("/admin/variants") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/variants") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
                 >
                   <FileBox className="h-4 w-4" />
-                  Product Variants
+                  Kích thước
                 </Link>
                 <Link
-                  href="/admin/users"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname.startsWith("/admin/users") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
+                  href="/admin/colors"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/colors") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
                 >
-                  <Users className="h-4 w-4" />
-                  Users
+                  <Palette className="h-4 w-4" />
+                  Màu sắc
                 </Link>
+                {canAccessUsers && (
+                  <Link
+                    href="/admin/users"
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/users") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                      }`}
+                  >
+                    <Users className="h-4 w-4" />
+                    Người dùng
+                  </Link>
+                )}
                 <Link
                   href="/admin/orders"
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${
-                    pathname.startsWith("/admin/orders") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
-                  }`}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 transition-all ${pathname.startsWith("/admin/orders") ? "bg-accent text-accent-foreground" : "hover:bg-accent"
+                    }`}
                 >
                   <Package className="h-4 w-4" />
-                  Orders
+                  Đơn hàng
                 </Link>
               </nav>
             </SheetContent>
@@ -231,11 +264,11 @@ export default function AdminLayout({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Action</DropdownMenuLabel>
+                  <DropdownMenuLabel>Menu</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="flex items-center gap-2 text-red-600" onClick={handleLogout}>
                     <LogOut className="h-4 w-4" />
-                    <span>Log out</span>
+                    <span>Đăng xuất</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

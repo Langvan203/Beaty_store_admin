@@ -93,18 +93,18 @@ export default function CategoriesPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Categories</h1>
+        <h1 className="text-2xl font-bold">Danh mục sản phẩm</h1>
         <Link href="/admin/categories/add">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add Category
+            Thêm danh mục
           </Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Category Management</CardTitle>
+          <CardTitle>Quản lý danh mục sản phẩm</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -125,17 +125,17 @@ export default function CategoriesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Thumbnail</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="hidden md:table-cell">Description</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Ảnh</TableHead>
+                  <TableHead>Tên</TableHead>
+                  <TableHead className="hidden md:table-cell">Mô tả</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredCategories?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">
-                      No categories found
+                      Không tìm thấy danh mục nào
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -159,7 +159,7 @@ export default function CategoriesPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
+                              <span className="sr-only">Mở menu</span>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -177,16 +177,16 @@ export default function CategoriesPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/categories/edit/${category.id}`}>Edit</Link>
+                              <Link href={`/admin/categories/edit/${category.id}`}>Sửa</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="text-red-600" 
                               onClick={() => openDeleteDialog(category.id)}
                             >
-                              Delete
+                              Xóa
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -204,13 +204,13 @@ export default function CategoriesPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Bạn có chắc chắn?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the category from the database.
+              Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault()
@@ -222,7 +222,7 @@ export default function CategoriesPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  Đang xóa...
                 </>
               ) : (
                 'Delete'

@@ -94,18 +94,18 @@ export default function BrandsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Brands</h1>
+        <h1 className="text-2xl font-bold">Thương hiệu</h1>
         <Link href="/admin/brands/add">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add Brand
+            Thêm thương hiệu
           </Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Brand Management</CardTitle>
+          <CardTitle>Quản lý thương hiệu</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -126,17 +126,17 @@ export default function BrandsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Thumbnail</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="hidden md:table-cell">Description</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Ảnh</TableHead>
+                  <TableHead>Tên</TableHead>
+                  <TableHead className="hidden md:table-cell">Mô tả</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredBrands?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">
-                      No brands found
+                      Không có thương hiệu nào được tìm thấy
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -160,7 +160,7 @@ export default function BrandsPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
+                              <span className="sr-only">Mở menu</span>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -181,13 +181,13 @@ export default function BrandsPage() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/brands/edit/${brand.id}`}>Edit</Link>
+                              <Link href={`/admin/brands/edit/${brand.id}`}>Sửa</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="text-red-600"
                               onClick={() => openDeleteDialog(brand.id)}
                             >
-                              Delete
+                              Xóa
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -205,13 +205,13 @@ export default function BrandsPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Bạn có chắc chắn xóa?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the brand from the database.
+              Hành động này không thể thay đổi. Thương hiệu sẽ bị xóa vĩnh viễn khỏi hệ thống.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault()
@@ -223,7 +223,7 @@ export default function BrandsPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  Đang xóa...
                 </>
               ) : (
                 'Delete'

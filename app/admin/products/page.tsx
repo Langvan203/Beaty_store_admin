@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Plus, Search } from "lucide-react"
+import { Loader2, Plus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Bounce, ToastContainer, toast } from 'react-toastify';
@@ -15,6 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useProduct } from "@/hooks/ProductContext"
 import { useAuth } from "@/hooks/AuthContext"
@@ -23,23 +33,35 @@ import { useRouter } from "next/navigation"
 // Mock data - replace with actual API calls
 
 export default function ProductsPage() {
-  const {product} = useProduct()
+  const { product } = useProduct()
   const [searchTerm, setSearchTerm] = useState("")
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter();
-  const {token} = useAuth();
-  const {refreshProduct} = useProduct();
+  const { token } = useAuth();
+  const { refreshProduct } = useProduct();
   const filteredProducts = product?.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-
-  const handleDelete = (id: number) => {
-    // In a real application, you would call an API to delete the product
-    const response = fetch(`http://localhost:5000/api/Product/Delete-product/?id=${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }).then((res) => res.json()).then((res) => {
-      if (res.status === 1) {
+  const openDeleteDialog = (id: number) => {
+    setSelectedProductId(id);
+    setIsDeleteDialogOpen(true);
+  }
+  const handleDelete = async () => {
+    if (!selectedProductId) return;
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/Product/Delete-product/?id=${selectedProductId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (result.status === 1) {
         toast.success('Xóa sản phẩm thành công', {
           position: "top-right",
           autoClose: 500,
@@ -51,12 +73,10 @@ export default function ProductsPage() {
           theme: "colored",
           transition: Bounce,
           onClose: () => {
-            router.push('/admin/products');
             refreshProduct();
           }
         });
-      }
-      else {
+      } else {
         toast.warning('Lỗi khi xóa sản phẩm', {
           position: "top-right",
           autoClose: 500,
@@ -69,24 +89,31 @@ export default function ProductsPage() {
           transition: Bounce,
         });
       }
-    })
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error('Đã xảy ra lỗi khi xóa sản phẩm');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+      setSelectedProductId(null);
+    }
   }
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <h1 className="text-2xl font-bold">Sản phẩm</h1>
         <Link href="/admin/products/add">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
-            Add Product
+            Thêm sản phẩm
           </Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Product Management</CardTitle>
+          <CardTitle>Quản lý sản phẩm</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -107,20 +134,20 @@ export default function ProductsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Discount</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Brand</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Tên</TableHead>
+                  <TableHead>Giá</TableHead>
+                  <TableHead>Số lượng</TableHead>
+                  <TableHead>Giảm giá</TableHead>
+                  <TableHead>Danh mục</TableHead>
+                  <TableHead>Hãng</TableHead>
+                  <TableHead className="text-right">Hành dộng</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProducts?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center">
-                      No products found
+                      Không tìm thấy sản phẩm nào
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -128,7 +155,7 @@ export default function ProductsPage() {
                     <TableRow key={product.id}>
                       <TableCell>{product.id}</TableCell>
                       <TableCell>{product.name}</TableCell>
-                      <TableCell>{product.price.toLocaleString('vi-VN')+'đ'}</TableCell>
+                      <TableCell>{product.price.toLocaleString('vi-VN') + 'đ'}</TableCell>
                       <TableCell>{product.stock}</TableCell>
                       <TableCell>{product.discount}%</TableCell>
                       <TableCell>{product.category}</TableCell>
@@ -137,7 +164,7 @@ export default function ProductsPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Open menu</span>
+                              <span className="sr-only">Mở menu</span>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -155,13 +182,16 @@ export default function ProductsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                              <Link href={`/admin/products/edit/${product.id}`}>Edit</Link>
+                              <Link href={`/admin/products/edit/${product.id}`}>Sửa</Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(product.id)}>
-                              Delete
+                            <DropdownMenuItem 
+                              className="text-red-600" 
+                              onClick={() => openDeleteDialog(product.id)}
+                            >
+                              Xóa
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -174,6 +204,37 @@ export default function ProductsPage() {
           </div>
         </CardContent>
       </Card>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa sản phẩm</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa sản phẩm này? 
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleDelete()
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang xóa...
+                </>
+              ) : (
+                'Xóa'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

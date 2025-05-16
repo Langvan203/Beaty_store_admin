@@ -35,6 +35,17 @@ interface ProductVariant {
   price: number
   stock: number
 }
+interface Color {
+  id: number;
+  hexaValue: string;
+  name: string;
+}
+
+interface ProductColor {
+  colorId: number;
+  colorName: string;
+  colorCode: string;
+}
 export default function EditProductPage() {
   const { Variant } = useVariant();
   const { Category } = useCategory();
@@ -46,18 +57,20 @@ export default function EditProductPage() {
   const { refreshProduct } = useProduct();
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [colors, setColors] = useState<Color[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [product, setProduct] = useState({
     id: 0,
     name: "",
     productDescription: "",
     price: "",
-    stock: "",
     discount: "",
     categoryId: "",
     brandId: "",
     ingredient: "",
     userManual: "",
     variants: [] as ProductVariant[], // Thay đổi từ string[] thành ProductVariant[]
+    colors: [] as ProductColor[], // Thêm mảng colors
     existingImages: [] as { id: number, url: string, isMain: boolean }[],
   })
 
@@ -96,6 +109,19 @@ export default function EditProductPage() {
           const variantIds = mappedVariants.map(v => v.variantId.toString());
           setSelectedVariants(variantIds);
 
+          const mappedColors: ProductColor[] = (data.data.colors || []).map((c: {
+            colorId: number;  // ✓ Sửa thành colorId
+            colorName: string;
+            colorCode: string;
+            stock: number  // ✓ Sửa thành stock
+          }) => ({
+            colorId: c.colorId,  // ✓ Sửa thành c.colorId
+            colorName: c.colorName,
+            colorCode: c.colorCode,
+            stock: c.stock  // ✓ Sửa thành c.stock
+          }));
+          const colorIds = mappedColors.map(c => c.colorId.toString());
+          setSelectedColors(colorIds);
           const existingImages = data.data.existingImages.map((img: any) => ({
             type: 'existing',
             data: { id: img.id, url: img.url },
@@ -111,13 +137,13 @@ export default function EditProductPage() {
             name: data.data.name,
             productDescription: data.data.productDescription || "",
             price: data.data.price.toString(),
-            stock: data.data.stock.toString(),
             discount: (data.data.discount).toString(),
             categoryId: data.data.categoryId.toString(),
             brandId: data.data.brandId.toString(),
             ingredient: data.data.ingredient || "",
             userManual: data.data.userManual || "",
             variants: mappedVariants, // Sử dụng variants đã được map
+            colors: mappedColors,
             existingImages: data.data.existingImages.map((img: any) => ({
               id: img.id,
               url: img.url,
@@ -135,6 +161,32 @@ export default function EditProductPage() {
     fetchData();
   }, [id, token, authLoading]);
 
+  useEffect(() => {
+    const fetchColors = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch("http://localhost:5000/api/Color/Get-all-color-admin", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.status === 1 && Array.isArray(result.data)) {
+          setColors(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching colors:", error);
+      }
+    };
+
+    fetchColors();
+  }, [token]);
   useEffect(() => {
     // Clean up object URLs when component unmounts or images change
     return () => {
@@ -187,6 +239,51 @@ export default function EditProductPage() {
     }
 
     setSelectedVariants(updatedSelectedVariants);
+  };
+
+  const handleColorChange = (color: string) => {
+    let updatedSelectedColors = [...selectedColors];
+
+    if (updatedSelectedColors.includes(color)) {
+      // Nếu đã chọn, bỏ chọn màu
+      updatedSelectedColors = updatedSelectedColors.filter(c => c !== color);
+
+      // Xóa màu khỏi danh sách colors
+      const updatedColors = product.colors.filter(c => c.colorId !== Number(color));
+      setProduct({ ...product, colors: updatedColors });
+    } else {
+      // Nếu chưa chọn, thêm màu vào danh sách
+      updatedSelectedColors.push(color);
+
+      // Tìm thông tin màu từ danh sách
+      const selectedColor = colors.find(c => c.id.toString() === color);
+
+      // Thêm màu mới với số lượng mặc định là 0
+      if (selectedColor) {
+        const newColor: ProductColor = {
+          colorId: Number(color),
+          colorName: selectedColor.name,
+          colorCode: selectedColor.hexaValue,
+        };
+
+        setProduct({
+          ...product,
+          colors: [...product.colors, newColor],
+        });
+      }
+    }
+
+    setSelectedColors(updatedSelectedColors);
+  };
+  const handleColorStockChange = (colorId: string, value: string) => {
+    const updatedColors = product.colors.map(color => {
+      if (color.colorId === Number(colorId)) {
+        return { ...color, stock: Number(value) };
+      }
+      return color;
+    });
+
+    setProduct({ ...product, colors: updatedColors });
   };
 
   const handleVariantDetailChange = (variantId: string, field: "price" | "stock", value: string) => {
@@ -257,7 +354,6 @@ export default function EditProductPage() {
       formData.append("ProductName", product.name)
       formData.append("ProductDescription", product.productDescription)
       formData.append("ProductPrice", product.price)
-      formData.append("ProductStock", product.stock)
       formData.append("ProductDiscount", (parseFloat(product.discount)).toString())
       formData.append("ProductIngredient", product.ingredient)
       formData.append("ProductUserManual", product.userManual)
@@ -269,6 +365,12 @@ export default function EditProductPage() {
         }))
       );
       formData.append("VariantID", variantsJson);
+      const colorsJson = JSON.stringify(
+        product.colors.map((c) => ({
+          ColorID: c.colorId,
+        }))
+      );
+      formData.append("colorID", colorsJson);
       // Existing images - only include IDs of existing images that weren't removed
       const existingImageIdsToKeep = allImages
         .filter(img => img.type === 'existing')
@@ -360,22 +462,22 @@ export default function EditProductPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit Product</h1>
+        <h1 className="text-2xl font-bold">Sửa sản phẩm</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
           <CardHeader>
-            <CardTitle>Product Information</CardTitle>
+            <CardTitle>Thông tin sản phẩm</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
+                <Label htmlFor="name">Tên sản phẩm *</Label>
                 <Input id="name" name="name" value={product.name} onChange={handleInputChange} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="price">Price *</Label>
+                <Label htmlFor="price">Giá *</Label>
                 <Input
                   id="price"
                   name="price"
@@ -387,20 +489,9 @@ export default function EditProductPage() {
                   required
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="stock">Stock *</Label>
-                <Input
-                  id="stock"
-                  name="stock"
-                  type="number"
-                  min="0"
-                  value={product.stock}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="discount">Discount (%)</Label>
+                <Label htmlFor="discount">Giảm giá (%)</Label>
                 <Input
                   id="discount"
                   name="discount"
@@ -412,7 +503,7 @@ export default function EditProductPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="categoryId">Category *</Label>
+                <Label htmlFor="categoryId">Danh mục *</Label>
                 <Select
                   value={product.categoryId}
                   onValueChange={(value) => handleSelectChange("categoryId", value)}
@@ -431,7 +522,7 @@ export default function EditProductPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="brandId">Brand *</Label>
+                <Label htmlFor="brandId">Nhãn hiệu *</Label>
                 <Select
                   value={product.brandId}
                   onValueChange={(value) => handleSelectChange("brandId", value)}
@@ -452,7 +543,7 @@ export default function EditProductPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Mô tả</Label>
               <Textarea
                 id="description"
                 name="description"
@@ -463,7 +554,7 @@ export default function EditProductPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="ingredient">Ingredients</Label>
+              <Label htmlFor="ingredient">Chi tiết mô tả</Label>
               <Textarea
                 id="ingredient"
                 name="ingredient"
@@ -474,7 +565,7 @@ export default function EditProductPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="userManual">User Manual</Label>
+              <Label htmlFor="userManual">Hướng dẫn</Label>
               <Textarea
                 id="userManual"
                 name="userManual"
@@ -485,7 +576,7 @@ export default function EditProductPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Product Variants (ml)</Label>
+              <Label>Kích thước sản phẩm</Label>
               <div className="flex flex-wrap gap-2">
                 {Variant?.map((variant) => (
                   <Button
@@ -495,7 +586,7 @@ export default function EditProductPage() {
                     onClick={() => handleVariantChange(variant.id.toString())}
                     className="rounded-full"
                   >
-                    {variant.name} ml
+                    {variant.name}
                   </Button>
                 ))}
               </div>
@@ -503,14 +594,14 @@ export default function EditProductPage() {
 
             {product.variants.length > 0 && (
               <div className="space-y-2">
-                <Label>Variant Details</Label>
+                <Label>Chi tiết kích thước</Label>
                 <div className="rounded-md border mt-2">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Size (ml)</TableHead>
-                        <TableHead>Price ($) *</TableHead>
-                        <TableHead>Stock *</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>Giá ($) *</TableHead>
+                        <TableHead>Số lượng *</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -545,9 +636,58 @@ export default function EditProductPage() {
                 </div>
               </div>
             )}
-
             <div className="space-y-2">
-              <Label>Current Images</Label>
+              <Label>Màu sắc</Label>
+              <div className="flex flex-wrap gap-2">
+                {colors.map((color) => (
+                  <Button
+                    key={color.id}
+                    type="button"
+                    variant={selectedColors.includes(color.id.toString()) ? "default" : "outline"}
+                    onClick={() => handleColorChange(color.id.toString())}
+                    className="rounded-full flex items-center gap-2"
+                  >
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: color.hexaValue }}
+                    ></div>
+                    {color.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {product.colors.length > 0 && (
+              <div className="space-y-2">
+                <Label>Color Stock</Label>
+                <div className="rounded-md border mt-2">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Màu sắc</TableHead>
+                        <TableHead>Tên màu</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {product.colors.map((color) => (
+                        <TableRow key={color.colorId}>
+                          <TableCell>
+                            <div
+                              className="w-6 h-6 rounded-full"
+                              style={{ backgroundColor: color.colorCode }}
+                            ></div>
+                          </TableCell>
+                          <TableCell>{color.colorName}</TableCell>
+                          
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label>Ảnh hiện tại</Label>
               {allImages.filter(img => img.type === 'existing').length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   {allImages
@@ -563,7 +703,7 @@ export default function EditProductPage() {
                           />
                           {mainImageIndex === index && (
                             <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-md">
-                              Main Image
+                              Ảnh chính
                             </div>
                           )}
                         </div>
@@ -585,7 +725,7 @@ export default function EditProductPage() {
                               className="opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={() => setMainImage(index)}
                             >
-                              Set Main
+                              Đặt làm ảnh chính
                             </Button>
                           )}
                         </div>
@@ -593,13 +733,13 @@ export default function EditProductPage() {
                     ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No current images</p>
+                <p className="text-sm text-muted-foreground">Không có ảnh nào</p>
               )}
             </div>
 
             {/* New Images Section */}
             <div className="space-y-2">
-              <Label htmlFor="images">New Images</Label>
+              <Label htmlFor="images">Thêm ảnh mới</Label>
               <div className="flex items-center gap-4">
                 <Button
                   type="button"
@@ -607,7 +747,7 @@ export default function EditProductPage() {
                   onClick={() => document.getElementById("images")?.click()}
                 >
                   <Upload className="mr-2 h-4 w-4" />
-                  Upload Images
+                  Tải lên ảnh
                 </Button>
                 <Input
                   id="images"
@@ -641,7 +781,7 @@ export default function EditProductPage() {
                             />
                             {mainImageIndex === globalIndex && (
                               <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded-md">
-                                Main Image
+                                Ảnh chính
                               </div>
                             )}
                           </div>
@@ -663,7 +803,7 @@ export default function EditProductPage() {
                                 className="opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => setMainImage(globalIndex)}
                               >
-                                Set Main
+                                Đặt làm ảnh chính
                               </Button>
                             )}
                           </div>
@@ -676,11 +816,11 @@ export default function EditProductPage() {
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => router.push("/admin/products")}>
-              Cancel
+              Hủy
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Update Product
+              Cập nhật sản phẩm
             </Button>
           </CardFooter>
         </Card>

@@ -20,10 +20,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedToken = localStorage.getItem("adminToken");
     const storedUser = localStorage.getItem("adminUser");
+    const staffToken = localStorage.getItem("staffToken");
+    const staffUser = localStorage.getItem("staff");
 
     if (storedToken) {
       setToken(storedToken);
       if (storedUser) setUser(JSON.parse(storedUser));
+    }
+    else if (staffToken) {
+      setToken(staffToken);
+      if (staffUser) setUser(JSON.parse(staffUser));
     }
     setIsLoading(false)
   }, []);
@@ -31,8 +37,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
+    if (newUser.role === 1) {
+      localStorage.setItem("adminToken", newToken);
+      localStorage.setItem("adminUser", JSON.stringify(newUser));
+    } else if (newUser.role === 2) {
+      localStorage.setItem("staffToken", newToken);
+      localStorage.setItem("staff", JSON.stringify(newUser));
+    }
+
   };
 
   const logout = () => {
@@ -40,6 +52,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("staffToken");
+    localStorage.removeItem("staff");
+    document.cookie = "adminAuthenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   };
 
   const refreshUser = async (customToken?: string) => {
@@ -59,6 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log(res.data)
           setUser(res.data)
           sessionStorage.setItem("user", JSON.stringify(res.data));
+        }
+        else if (res.data.role === 2) {
+          localStorage.setItem("staff", JSON.stringify(res.data));
         }
         else {
           console.log("lỗi cập nhật thông tin")

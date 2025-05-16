@@ -150,25 +150,25 @@ export default function VariantsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Product Variants</h1>
+        <h1 className="text-2xl font-bold">Kích thước sản phẩm</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Variant
+              Thêm kích thước
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Variant</DialogTitle>
-              <DialogDescription>Add a new product variant size (in ml).</DialogDescription>
+              <DialogTitle>Thêm mới kích thước</DialogTitle>
+              <DialogDescription>Thêm mới kích thước sản phẩm</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="variant">Variant Size (ml) *</Label>
+                <Label htmlFor="variant">Kích thước *</Label>
                 <Input
                   id="variant"
-                  type="number"
+                  
                   min="1"
                   value={newVariant}
                   onChange={(e) => setNewVariant(e.target.value)}
@@ -178,11 +178,11 @@ export default function VariantsPage() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
+                Hủy
               </Button>
               <Button onClick={handleAddVariant} disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Variant
+                Thêm kích thước
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -191,7 +191,7 @@ export default function VariantsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Variant Management</CardTitle>
+          <CardTitle>Quản lý kích thước</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 mb-4">
@@ -212,22 +212,22 @@ export default function VariantsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Size (ml)</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Kích thước</TableHead>
+                  <TableHead className="text-right">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredVariants?.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center">
-                      No variants found
+                      Không có kích thước nào được tìm thấy
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredVariants?.map((variant) => (
                     <TableRow key={variant.id}>
                       <TableCell>{variant.id}</TableCell>
-                      <TableCell className="font-medium">{variant.name} ml</TableCell>
+                      <TableCell className="font-medium">{variant.name}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -235,7 +235,7 @@ export default function VariantsPage() {
                           className="text-red-500 hover:text-red-700 hover:bg-red-100"
                           onClick={() => openDeleteDialog(variant.id)}
                         >
-                          Delete
+                          Xóa
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -251,14 +251,13 @@ export default function VariantsPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Bạn có chắc chắn?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the variant from the database.
-              Products using this variant may be affected.
+              Bạn có chắc chắn muốn xóa kích thước này? Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault()
@@ -270,7 +269,7 @@ export default function VariantsPage() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
+                  Đang xóa...
                 </>
               ) : (
                 'Delete'

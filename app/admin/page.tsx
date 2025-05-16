@@ -69,24 +69,24 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">Tổng quan</h1>
         <div className="flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 <Filter className="h-4 w-4" />
-                <span>Filter</span>
+                <span>Lọc</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80">
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Date Range</h4>
-                  <p className="text-sm text-muted-foreground">Filter dashboard data by year and month</p>
+                  <h4 className="font-medium leading-none">Phạm vi ngày</h4>
+                  <p className="text-sm text-muted-foreground">Lọc dữ liệu theo năm</p>
                 </div>
                 <div className="grid gap-2">
                   <div className="grid grid-cols-3 items-center gap-4">
-                    <Label htmlFor="year">Year</Label>
+                    <Label htmlFor="year">Năm</Label>
                     <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
                       <SelectTrigger id="year">
                         <SelectValue placeholder="Select year" />
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
                 <ShoppingCart className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Orders</p>
+                <p className="text-sm text-muted-foreground">Tổng số đơn hàng</p>
                 <h3 className="text-2xl font-bold">{chartData?.totalOrders}</h3>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
                 <Package className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Products</p>
+                <p className="text-sm text-muted-foreground">Tổng số sản phẩm được bán</p>
                 <h3 className="text-2xl font-bold">{chartData?.totalProducts}</h3>
               </div>
             </div>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                 <DollarSign className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
+                <p className="text-sm text-muted-foreground">Tổng doanh thu</p>
                 <h3 className="text-2xl font-bold">{chartData?.totalRevenue.toLocaleString('vi-VN')+ 'đ'} </h3>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
                 <Users className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-sm text-muted-foreground">Tổng số lượng người dùng</p>
                 <h3 className="text-2xl font-bold">{chartData?.totalUsers}</h3>
               </div>
             </div>
@@ -173,9 +173,9 @@ export default function AdminDashboard() {
 
       <Tabs defaultValue="sales">
         <TabsList className="grid w-full grid-cols-3 mb-4">
-          <TabsTrigger value="sales">Sales Overview</TabsTrigger>
-          <TabsTrigger value="categories">Category Distribution</TabsTrigger>
-          <TabsTrigger value="orders">Recent Orders</TabsTrigger>
+          <TabsTrigger value="sales">Tổng quan bán hàng</TabsTrigger>
+          <TabsTrigger value="categories">Thống kê danh mục</TabsTrigger>
+          <TabsTrigger value="orders">Đơn hàng gần đây</TabsTrigger>
         </TabsList>
         <TabsContent value="sales">
           <Card>
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
                 {`Monthly Sales (${selectedYear})`}
               </CardTitle>
               <CardDescription>
-                Sales performance over the year
+                Tỉ lệ bán hàng theo tháng
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -214,8 +214,8 @@ export default function AdminDashboard() {
         <TabsContent value="categories">
           <Card>
             <CardHeader>
-              <CardTitle>Category Distribution</CardTitle>
-              <CardDescription>Distribution of products by category</CardDescription>
+              <CardTitle>Thống kê theo danh mục</CardTitle>
+              <CardDescription>Tỷ lệ bán hàng theo danh mục</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px] flex justify-center">
@@ -246,8 +246,8 @@ export default function AdminDashboard() {
         <TabsContent value="orders">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-              <CardDescription>Latest customer orders</CardDescription>
+              <CardTitle>Đơn hàng gần đây</CardTitle>
+              <CardDescription>Đơn hàng mới nhất</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -257,10 +257,10 @@ export default function AdminDashboard() {
                       <thead>
                         <tr className="border-b">
                           <th className="text-left p-2">Order ID</th>
-                          <th className="text-left p-2">Customer</th>
-                          <th className="text-left p-2">Date</th>
-                          <th className="text-left p-2">Total</th>
-                          <th className="text-left p-2">Status</th>
+                          <th className="text-left p-2">Khách hàng</th>
+                          <th className="text-left p-2">Ngày đặt</th>
+                          <th className="text-left p-2">Tổng tiền</th>
+                          <th className="text-left p-2">Trạng thái</th>
                         </tr>
                       </thead>
                       <tbody>
