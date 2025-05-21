@@ -607,7 +607,7 @@ export default function EditProductPage() {
                     <TableBody>
                       {product.variants.map((variant) => (
                         <TableRow key={variant.variantId}>
-                          <TableCell>{variant.size} ml</TableCell>
+                          <TableCell>{Variant?.find(v => v.id === variant.variantId)?.name || variant.size}</TableCell>
                           <TableCell>
                             <Input
                               type="number"
